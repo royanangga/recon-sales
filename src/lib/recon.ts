@@ -9,7 +9,7 @@ export type Group = 'HANWA/USC' | 'IMPOR' | 'OTHER' | 'UNMATCHED';
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Kode item penjualan berakhiran "S" (mis. 27016-120CS) -> kode pembelian (27016-120C). */
-export const baseCode = (k: string) => (k || '').trim().replace(/S$/i, '');
+export const baseCode = export const baseCode = (k: string) => (k || '').trim().slice(0, -1);
 export const supplierOf = (name: string) => (/HANWA/i.test(name || '') ? 'HANWA' : /UNITED\s*STEEL/i.test(name || '') ? 'USC' : null);
 
 export type Inputs = {
