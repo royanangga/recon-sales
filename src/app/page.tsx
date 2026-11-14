@@ -10,10 +10,10 @@ function Journal({ lines, diff, title }: any) {
   const d = lines.reduce((a: number, l: any) => a + l.debit, 0), c = lines.reduce((a: number, l: any) => a + l.credit, 0);
   return (
     <div className="card"><h2>{title}</h2>
-      <table><thead><tr><th>Akun</th><th>Nama</th><th>Ket.</th><th className="n">Debit</th><th className="n">Kredit</th></tr></thead>
+      <div className="tw"><table><thead><tr><th>Akun</th><th>Nama</th><th>Ket.</th><th className="n">Debit</th><th className="n">Kredit</th></tr></thead>
         <tbody>{lines.map((l: any, i: number) => <tr key={i}><td>{l.account}</td><td>{l.name}</td><td className="mute">{l.note}</td><Num v={l.debit} /><Num v={l.credit} /></tr>)}</tbody>
         <tfoot><tr><td colSpan={3}>Total {Math.abs(diff) < 1 ? <span className="ok">✓ balance</span> : <span className="bad">selisih {fmt(diff)}</span>}</td><td className="n">{fmt(d)}</td><td className="n">{fmt(c)}</td></tr></tfoot>
-      </table></div>
+      </table></div></div>
   );
 }
 
@@ -47,24 +47,24 @@ export default function Dashboard() {
       {d.warnings.map((w: string, i: number) => <div className="alert" key={i}>⚠ {w}</div>)}
       <div className="grid">
         <div className="card"><h2>Rekonsiliasi SL AR vs PO PROGRESS COIL</h2>
-          <table><thead><tr><th>Kelompok</th><th className="n">Sales (DPP)</th><th className="n">Purchase</th><th className="n">Variance</th></tr></thead>
+          <div className="tw"><table><thead><tr><th>Kelompok</th><th className="n">Sales (DPP)</th><th className="n">Purchase</th><th className="n">Variance</th></tr></thead>
             <tbody>{d.recon.map((r: any) => <tr key={r.group}><td>{r.group}</td><Num v={r.sales} /><Num v={r.purchase} /><Num v={r.variance} /></tr>)}
               {d.unmatched.count > 0 && <tr><td className="warn">TIDAK DITEMUKAN ({d.unmatched.count})</td><Num v={d.unmatched.sales} /><td /><td /></tr>}</tbody>
-            <tfoot><tr><td>Total</td><td className="n">{fmt(d.tot.sales)}</td><td className="n">{fmt(d.tot.purchase)}</td><td className="n">{fmt(d.tot.sales - d.tot.purchase)}</td></tr></tfoot></table>
+            <tfoot><tr><td>Total</td><td className="n">{fmt(d.tot.sales)}</td><td className="n">{fmt(d.tot.purchase)}</td><td className="n">{fmt(d.tot.sales - d.tot.purchase)}</td></tr></tfoot></table></div>
           <p className="mute">HANWA/USC = pembelian aktual PO (setelah inhouse dipisahkan). IMPOR/OTHER = Qty × harga beli.</p>
         </div>
         <div className="card"><h2>PO Progress — pemisahan Inhouse</h2>
-          <table><thead><tr><th>Supplier</th><th className="n">Rec Amount</th><th className="n">Inhouse (dipisah)</th><th className="n">Masuk rekonsiliasi</th></tr></thead>
+          <div className="tw"><table><thead><tr><th>Supplier</th><th className="n">Rec Amount</th><th className="n">Inhouse (dipisah)</th><th className="n">Masuk rekonsiliasi</th></tr></thead>
             <tbody>{(['HANWA', 'USC'] as const).map((s) => <tr key={s}><td>{s}</td><Num v={d.po[s].total} /><Num v={d.po[s].inhouse} /><Num v={d.po[s].total - d.po[s].inhouse} /></tr>)}</tbody>
-            <tfoot><tr><td colSpan={3}>Net HANWA/USC</td><td className="n">{fmt(d.po.net)}</td></tr></tfoot></table>
+            <tfoot><tr><td colSpan={3}>Net HANWA/USC</td><td className="n">{fmt(d.po.net)}</td></tr></tfoot></table></div>
         </div>
       </div>
       <Journal title="Jurnal Adjustment Purchase Merchandise" lines={d.purchaseJournal.lines} diff={d.purchaseJournal.diff} />
       <div className="grid">
         <div className="card"><h2>Analisis GL SALES (EZR vs SAP)</h2>
-          <table><thead><tr><th>Akun</th><th>Jenis</th><th className="n">EZR Sales</th><th className="n">GL Sales</th><th className="n">D (K)</th></tr></thead>
+          <div className="tw"><table><thead><tr><th>Akun</th><th>Jenis</th><th className="n">EZR Sales</th><th className="n">GL Sales</th><th className="n">D (K)</th></tr></thead>
             <tbody>{d.gls.rows.map((r: any) => <tr key={r.account}><td>{r.account}</td><td>{r.name.replace('Sales Merchandise ', '')}</td><Num v={r.ezr} /><Num v={r.gl} /><Num v={r.diff} /></tr>)}</tbody>
-            <tfoot><tr><td colSpan={2}>Total</td><td className="n">{fmt(d.gls.ezrTotal)}</td><td className="n">{fmt(d.gls.glTotal)}</td><td className="n">{fmt(d.gls.rows.reduce((a: number, r: any) => a + r.diff, 0))}</td></tr></tfoot></table>
+            <tfoot><tr><td colSpan={2}>Total</td><td className="n">{fmt(d.gls.ezrTotal)}</td><td className="n">{fmt(d.gls.glTotal)}</td><td className="n">{fmt(d.gls.rows.reduce((a: number, r: any) => a + r.diff, 0))}</td></tr></tfoot></table></div>
           <p className="mute">Selisih total EZR vs SAP: <b className={Math.abs(d.gls.selisihEzrSap) < 1 ? 'ok' : 'bad'}>{fmt(d.gls.selisihEzrSap) || '0'}</b></p>
         </div>
         <Journal title="Jurnal Adjustment Sales Merchandise" lines={d.salesJournal.lines} diff={d.salesJournal.diff} />
