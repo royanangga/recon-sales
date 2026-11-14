@@ -1,14 +1,15 @@
 import './globals.css';
-import Link from 'next/link';
+import Nav from './Nav';
 export const metadata = { title: 'Adjustment Sales & Purchase Merchandise' };
+export const viewport = { themeColor: '#6a5ae0', width: 'device-width', initialScale: 1 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id"><body>
-      <nav><b>Adjustment Merchandise</b>
-        <Link href="/">Dashboard</Link><Link href="/detail">Detail SL AR</Link>
-        <Link href="/part-impor">Part Impor</Link><Link href="/import">Import File</Link>
-      </nav>
-      <main>{children}</main>
+      <div className="shell">
+        <aside><b className="logo" role="img" aria-label="Adjustment Merchandise">AM</b><Nav /></aside>
+        <header className="topbar"><b className="tb-logo">Adjustment Merchandise</b></header>
+        <main>{children}</main>
+      </div>
     </body></html>
   );
 }
