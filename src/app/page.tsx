@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import * as XLSX from 'xlsx';
 import { fmt } from '@/lib/format';
 import { usePeriod, PeriodSelect } from './usePeriod';
 
@@ -25,21 +24,23 @@ export default function Dashboard() {
     fetch('/api/recon?period=' + period).then((r) => r.json()).then((j) => { if (j.error) { setErr(j.error); setD(null); } else setD(j); }).catch((e) => setErr(String(e))).finally(() => setLoading(false));
   }, [period]);
 
-  function exportXlsx() {
-    const wb = XLSX.utils.book_new();
-    const add = (n: string, rows: any[]) => XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), n);
-    add('Rekonsiliasi', d.recon.map((r: any) => ({ Kelompok: r.group, Sales: r.sales, Purchase: r.purchase, Variance: r.variance })));
-    add('Jurnal Purchase', d.purchaseJournal.lines.map((l: any) => ({ Akun: l.account, Nama: l.name, Ket: l.note, Debit: l.debit, Kredit: l.credit })));
-    add('Jurnal Sales', d.salesJournal.lines.map((l: any) => ({ Akun: l.account, Nama: l.name, Debit: l.debit, Kredit: l.credit })));
-    add('Detail SL AR', d.lines.map((l: any) => ({ Invoice: l.invoice_no, Customer: l.customer, 'Customer DN': l.customer_dn_no, 'Item Code': l.item_code, Qty: l.qty, Harga_Jual: l.price, DPP: l.dpp, Kelompok: l.group, Sumber: l.source, Harga_Beli: l.buy_price, Purchase: l.purchase })));
-    XLSX.writeFile(wb, `adjustment-${period}.xlsx`);
+  const [exporting, setExporting] = useState(false);
+  async function exportXlsx() {
+    setExporting(true); setErr('');
+    try {
+      const r = await fetch('/api/export?period=' + period); const p = await r.json(); if (p.error) throw new Error(p.error);
+      const [{ default: ExcelJS }, { buildWorkbook }] = await Promise.all([import('exceljs'), import('@/lib/exportExcel')]);
+      const wb = await buildWorkbook(ExcelJS, p); const buf = await wb.xlsx.writeBuffer();
+      const url = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const a = document.createElement('a'); a.href = url; a.download = `CEK AR & AP ${period}.xlsx`; a.click(); URL.revokeObjectURL(url);
+    } catch (e: any) { setErr('Export gagal: ' + e.message); } finally { setExporting(false); }
   }
 
   return (<>
     <div className="row" style={{ marginBottom: 14 }}>
       <h1 className="grow" style={{ margin: 0 }}>Dashboard Adjustment — periode</h1>
       <PeriodSelect periods={periods} period={period} setPeriod={setPeriod} />
-      <button onClick={exportXlsx} disabled={!d}>Export Excel</button>
+      <button onClick={exportXlsx} disabled={!d || exporting}>{exporting ? 'Menyiapkan…' : 'Export Excel (rumus)'}</button>
     </div>
     {loading && <p className="mute">Menghitung…</p>}
     {err && <div className="alert bad">{err}</div>}
